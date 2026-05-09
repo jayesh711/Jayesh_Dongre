@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jayesh Dongre — Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%); }
+    .card { backdrop-filter: blur(12px); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+    .btn-primary { background: linear-gradient(90deg, #3b82f6, #6366f1); transition: all 0.3s; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99,102,241,0.4); }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+
+  <!-- Hero Section -->
+  <section class="flex flex-col items-center justify-center text-center px-6 py-20">
+    <div class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-4xl font-bold mb-6 shadow-2xl">
+      JD
+    </div>
+    <h1 class="text-5xl font-bold tracking-tight mb-3">Jayesh Dongre</h1>
+    <p class="text-xl text-blue-300 mb-2">Software Developer &amp; Technology Enthusiast</p>
+    <p class="text-gray-400 max-w-xl mb-8">Passionate about building impactful digital experiences. Open to exciting opportunities.</p>
+
+    <div class="flex flex-wrap gap-4 justify-center mb-4">
+      <a href="Jayesh_Dongare_Resume.pdf" download
+         class="btn-primary px-6 py-3 rounded-xl font-semibold text-white flex items-center gap-2">
+        ⬇ Download Resume
+      </a>
+      <a href="https://github.com/jayesh711" target="_blank"
+         class="card px-6 py-3 rounded-xl font-semibold text-white hover:bg-white/10 transition flex items-center gap-2">
+        🐙 GitHub
+      </a>
+      <a href="mailto:dongrejayesh89@gmail.com"
+         class="card px-6 py-3 rounded-xl font-semibold text-white hover:bg-white/10 transition flex items-center gap-2">
+        ✉ Contact
+      </a>
+    </div>
+  </section>
+
+  <!-- Resume Viewer -->
+  <section class="max-w-5xl mx-auto px-4 pb-16">
+    <div class="card rounded-2xl overflow-hidden shadow-2xl">
+      <div class="flex items-center gap-3 px-6 py-4 border-b border-white/10">
+        <span class="text-2xl">📄</span>
+        <h2 class="text-lg font-semibold">Resume</h2>
+        <a href="Jayesh_Dongare_Resume.pdf" download
+           class="ml-auto text-sm text-blue-400 hover:text-blue-300 transition">
+          Download PDF ↓
+        </a>
+      </div>
+      <iframe
+        src="Jayesh_Dongare_Resume.pdf"
+        class="w-full"
+        style="height: 85vh; border: none;"
+        title="Jayesh Dongre Resume">
+        <p class="p-8 text-gray-400">
+          Your browser doesn't support inline PDF viewing.
+          <a href="Jayesh_Dongare_Resume.pdf" class="text-blue-400 underline">Click here to download the resume.</a>
+        </p>
+      </iframe>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center pb-8 text-gray-500 text-sm">
+    © 2026 Jayesh Dongre · Built with GitHub Pages
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Jayesh Dongare — XR + AI Engineer</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg: #1C1D21;
+    --surface: #26272D;
+    --surface-alt: #15161A;
+    --border: #34353C;
+    --border-top: #42434B;
+    --text: #EDEDEF;
+    --muted: #9A9AA3;
+    --tertiary: #6B6B72;
+    --accent: #7DD3FC;
+    --accent-soft: #1E3A4A;
+    --accent-soft-border: #2C5468;
+  }
+  html, body { background: var(--bg); color: var(--text); }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.011em;
+    font-weight: 400;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .ease-spatial { transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+
+  /* Reveal on enter */
+  .reveal { opacity: 0; transform: translateY(10px); transition: opacity 900ms cubic-bezier(0.16,1,0.3,1), transform 900ms cubic-bezier(0.16,1,0.3,1); }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* Hero headline */
+  .hero-h1 {
+    font-size: clamp(48px, 8vw, 120px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    font-weight: 700;
+  }
+
+  /* Marquee */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .marquee-track { animation: marquee 60s linear infinite; }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+
+  /* Scroll chevron */
+  @keyframes nudge {
+    0%, 100% { transform: translateY(0); opacity: 0.55; }
+    50% { transform: translateY(6px); opacity: 1; }
+  }
+  .nudge { animation: nudge 2.4s cubic-bezier(0.16,1,0.3,1) infinite; }
+
+  /* Selection */
+  ::selection { background: rgba(125,211,252,0.25); color: #EDEDEF; }
+
+  /* Subtle scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #15161A; }
+  ::-webkit-scrollbar-thumb { background: #34353C; border-radius: 8px; }
+
+  /* Scroll progress bar */
+  .scroll-progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+    background: var(--accent);
+    z-index: 60; pointer-events: none;
+    transition: width 80ms linear;
+  }
+
+  /* Card depth trick — lighter top edge simulates light from above */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top-color: var(--border-top);
+    transition: border-color 200ms ease-out, transform 200ms ease-out;
+  }
+  .card:hover {
+    border-top-color: rgba(125,211,252,0.6) !important;
+    transform: translateY(-3px);
+  }
+
+  /* Project media art — deeper recessed surface with cyan linework */
+  .art {
+    position: absolute; inset: 0;
+    background: #101115;
+    overflow: hidden;
+  }
+  .art::after {
+    content: ""; position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(16,17,21,0) 60%, rgba(16,17,21,0.7) 100%);
+  }
+
+  /* Art 1 — wave grid */
+  .art-1 {
+    background:
+      radial-gradient(120% 80% at 80% 20%, rgba(125,211,252,0.20), transparent 60%),
+      radial-gradient(80% 60% at 20% 90%, rgba(125,211,252,0.10), transparent 65%),
+      #101115;
+  }
+  .art-1::before {
+    content: ""; position: absolute; inset: -20%;
+    background-image:
+      linear-gradient(to right, rgba(125,211,252,0.16) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(125,211,252,0.16) 1px, transparent 1px);
+    background-size: 28px 28px;
+    transform: perspective(700px) rotateX(55deg) translateY(8%);
+    transform-origin: center;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, #000 30%, transparent 80%);
+  }
+
+  /* Art 2 — concentric rings */
+  .art-2 {
+    background:
+      repeating-radial-gradient(circle at 50% 60%, rgba(125,211,252,0.22) 0px, rgba(125,211,252,0.22) 1px, transparent 1px, transparent 14px),
+      radial-gradient(60% 50% at 50% 60%, rgba(125,211,252,0.14), transparent 70%),
+      #101115;
+  }
+  @keyframes pulse2 { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
+  .art-2::before {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 60%, rgba(125,211,252,0.6) 0%, transparent 6%);
+    animation: pulse2 3.6s ease-in-out infinite;
+  }
+
+  /* Art 3 — ballistic trajectories */
+  .art-3 {
+    background:
+      linear-gradient(180deg, #101115 0%, #15161A 100%);
+  }
+  .art-3::before {
+    content: ""; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(237,237,239,0.08) 1px, transparent 1px);
+    background-size: 14px 100%;
+    mask-image: linear-gradient(180deg, transparent, #000 60%);
+  }
+
+  /* Art 4 — voxel cloud */
+  .art-4 {
+    background:
+      radial-gradient(closest-side at 30% 40%, rgba(125,211,252,0.20), transparent 60%),
+      radial-gradient(closest-side at 70% 70%, rgba(237,237,239,0.06), transparent 60%),
+      #101115;
+  }
+  .art-4::before {
+    content: ""; position: absolute; inset: 0;
+    background-image:
+      radial-gradient(rgba(125,211,252,0.6) 1px, transparent 1.5px),
+      radial-gradient(rgba(237,237,239,0.25) 1px, transparent 1.5px);
+    background-size: 18px 18px, 26px 26px;
+    background-position: 0 0, 9px 13px;
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, #000 30%, transparent 80%);
+  }
+
+  /* Art 5 — product configurator orbit */
+  .art-5 {
+    background:
+      radial-gradient(60% 60% at 50% 50%, rgba(125,211,252,0.16), transparent 70%),
+      #101115;
+  }
+  .art-5::before {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 70%; aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1px solid rgba(125,211,252,0.40);
+  }
+  .art-5::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 40%; aspect-ratio: 1;
+    transform: translate(-50%, -50%) rotate(20deg);
+    border-radius: 50%;
+    border: 1px dashed rgba(237,237,239,0.18);
+  }
+
+  /* Art 6 — webrtc waveform */
+  .art-6 {
+    background: #101115;
+    overflow: hidden;
+  }
+  .art-6::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(90deg, rgba(125,211,252,0) 0px, rgba(125,211,252,0) 5px, rgba(125,211,252,0.22) 5px, rgba(125,211,252,0.22) 6px);
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, #000 30%, transparent 85%);
+  }
+
+  /* Hairline */
+  .hairline { border-color: var(--border); }
+
+  /* CTA */
+  .btn-primary {
+    background: var(--accent); color: #0A0A0B;
+    transition: transform 500ms cubic-bezier(0.16,1,0.3,1), background 400ms;
+  }
+  .btn-primary:hover { background: #A8E2FD; }
+  .btn-ghost {
+    border: 1px solid var(--accent); color: var(--accent); background: transparent;
+    transition: background 500ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .btn-ghost:hover { background: rgba(125,211,252,0.08); }
+
+  /* Section spec label dot */
+  .spec-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display:inline-block; margin-right: 10px; vertical-align: middle; }
+
+  /* Hero canvas pos */
+  .hero-canvas { position: absolute; inset: 0; z-index: 0; }
+
+  /* Hero atmospheric glow — soft cyan radial behind the cloud */
+  .hero-glow {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(40% 50% at 50% 45%, rgba(125,211,252,0.12) 0%, transparent 70%);
+  }
+
+  /* Vignette — fade to base bg so overlay text reads */
+  .hero-vignette {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      radial-gradient(120% 80% at 70% 50%, rgba(28,29,33,0) 30%, rgba(28,29,33,0.45) 80%),
+      linear-gradient(180deg, rgba(28,29,33,0.0) 50%, rgba(28,29,33,0.85) 100%);
+  }
+
+  /* Tech chips — luminescent labels */
+  .chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-soft-border);
+    padding: 3px 9px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  /* Category tags */
+  .cat-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+
+  /* Timeline — small precious glow allowed on nodes */
+  .tl-node {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 12px rgba(125,211,252,0.4);
+  }
+
+  /* Link underline accent */
+  .link-acc { position: relative; }
+  .link-acc::after {
+    content: ""; position: absolute; left: 0; bottom: -2px; height: 1px;
+    background: var(--accent); width: 0;
+    transition: width 600ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .link-acc:hover::after { width: 100%; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface); border: 1px solid var(--border); border-top-color: var(--border-top); padding: 10px 16px; border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    opacity: 0; transition: opacity 400ms, transform 600ms cubic-bezier(0.16,1,0.3,1);
+    z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Top status bar */
+  .topnav-blur { backdrop-filter: blur(14px); background: rgba(28,29,33,0.7); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="env,react">
+const { useEffect, useRef, useState, useCallback } = React;
+
+/* ============================================================
+   Lucide-style inline icons (no external dep, same visual lang)
+   ============================================================ */
+const Icon = ({ d, size = 18, stroke = 1.6, children, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" className={className}>
+    {d ? <path d={d} /> : children}
+  </svg>
+);
+const I = {
+  ArrowRight: (p) => <Icon {...p}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></Icon>,
+  ArrowUp:    (p) => <Icon {...p}><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></Icon>,
+  ChevronDown:(p) => <Icon {...p}><path d="m6 9 6 6 6-6"/></Icon>,
+  ExternalLink:(p) => <Icon {...p}><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></Icon>,
+  Github:     (p) => <Icon {...p}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5a13 13 0 0 0-7 0C7 2 6 2 6 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 5 9c0 3.5 3 5.5 6 5.5a4.7 4.7 0 0 0-1 3.5v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></Icon>,
+  Linkedin:   (p) => <Icon {...p}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></Icon>,
+  Mail:       (p) => <Icon {...p}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></Icon>,
+  Copy:       (p) => <Icon {...p}><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></Icon>,
+  Check:      (p) => <Icon {...p}><path d="M20 6 9 17l-5-5"/></Icon>,
+  Network:    (p) => <Icon {...p}><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></Icon>,
+  Activity:   (p) => <Icon {...p}><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.5.5 0 0 1-.96 0L9.24 2.18a.5.5 0 0 0-.96 0l-2.35 8.36A2 2 0 0 1 4 12H2"/></Icon>,
+  Crosshair:  (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/><line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/><line x1="12" x2="12" y1="22" y2="18"/></Icon>,
+  Box:        (p) => <Icon {...p}><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></Icon>,
+  Mic:        (p) => <Icon {...p}><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></Icon>,
+  Users:      (p) => <Icon {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></Icon>,
+  MapPin:     (p) => <Icon {...p}><path d="M20 10c0 7-8 13-8 13s-8-6-8-13a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></Icon>,
+  FileText:   (p) => <Icon {...p}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></Icon>,
+};
+
+/* ============================================================
+   Reveal-on-scroll wrapper
+   ============================================================ */
+const Reveal = ({ children, delay = 0, as: Tag = "div", className = "", ...rest }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          setTimeout(() => el.classList.add("in"), delay);
+          io.unobserve(el);
+        }
+      });
+    }, { threshold: 0.12 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [delay]);
+  return <Tag ref={ref} className={`reveal ${className}`} {...rest}>{children}</Tag>;
+};
+
+/* ============================================================
+   HERO — Three.js point cloud
+   ============================================================ */
+function Hero() {
+  const mountRef = useRef(null);
+  const targetRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount || !window.THREE) return;
+    const THREE = window.THREE;
+
+    const w = () => mount.clientWidth;
+    const h = () => mount.clientHeight;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x1C1D21, 0.05);
+
+    const camera = new THREE.PerspectiveCamera(55, w() / h(), 0.1, 100);
+    camera.position.set(0, 0, 9);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(w(), h());
+    renderer.setClearColor(0x1C1D21, 1);
+    mount.appendChild(renderer.domElement);
+
+    /* ---- Procedural point cloud ----
+       ~5000 particles in a soft toroidal/spherical distribution.
+       Layered as 3 PointClouds with different sizes/opacities for a fake bloom. */
+    const NUM = 5000;
+    const positions = new Float32Array(NUM * 3);
+    const seeds = new Float32Array(NUM);
+    for (let i = 0; i < NUM; i++) {
+      // Mix of two distributions for visual depth
+      const t = Math.random();
+      let x, y, z;
+      if (t < 0.65) {
+        // toroidal sweep
+        const u = Math.random() * Math.PI * 2;
+        const v = Math.random() * Math.PI * 2;
+        const R = 4.2 + (Math.random() - 0.5) * 0.6;
+        const r = 1.8 + (Math.random() - 0.5) * 0.9;
+        x = (R + r * Math.cos(v)) * Math.cos(u);
+        y = (R + r * Math.cos(v)) * Math.sin(u) * 0.5;
+        z = r * Math.sin(v);
+      } else {
+        // spherical halo
+        const u = Math.random();
+        const phi = Math.acos(2 * Math.random() - 1);
+        const theta = Math.random() * Math.PI * 2;
+        const radius = 3 + Math.pow(u, 0.5) * 4;
+        x = radius * Math.sin(phi) * Math.cos(theta);
+        y = radius * Math.sin(phi) * Math.sin(theta) * 0.6;
+        z = radius * Math.cos(phi);
+      }
+      positions[i*3+0] = x;
+      positions[i*3+1] = y;
+      positions[i*3+2] = z;
+      seeds[i] = Math.random();
+    }
+
+    const baseGeom = new THREE.BufferGeometry();
+    baseGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    /* Mid-tone point cloud: #7DD3FC particles, primary layer @ 0.85 opacity + a larger 1.5x layer @ 0.3 for in-cloud depth */
+    const makeLayer = (size, opacity) => {
+      const mat = new THREE.PointsMaterial({
+        color: 0x7DD3FC,
+        size,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      return new THREE.Points(baseGeom, mat);
+    };
+
+    const layerCore  = makeLayer(0.024, 0.85);   // primary
+    const layerDepth = makeLayer(0.036, 0.30);   // ~1.5x size, in-cloud depth
+    const layerGlow  = makeLayer(0.10,  0.08);   // soft halo
+
+    const group = new THREE.Group();
+    group.add(layerCore, layerDepth, layerGlow);
+    scene.add(group);
+
+    // Subtle accent star scatter (white dim)
+    const starsPos = new Float32Array(800 * 3);
+    for (let i=0;i<800;i++){
+      starsPos[i*3+0] = (Math.random()-0.5)*30;
+      starsPos[i*3+1] = (Math.random()-0.5)*18;
+      starsPos[i*3+2] = -8 - Math.random()*10;
+    }
+    const starsGeom = new THREE.BufferGeometry();
+    starsGeom.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
+    /* Subtle light dot scatter — ambient stars for depth */
+    const starsMat = new THREE.PointsMaterial({
+      color: 0xEDEDEF, size: 0.016, transparent: true, opacity: 0.25,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    });
+    scene.add(new THREE.Points(starsGeom, starsMat));
+
+    let raf = 0;
+    const start = performance.now();
+
+    const onMove = (e) => {
+      const rect = mount.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / rect.width - 0.5;
+      const ny = (e.clientY - rect.top) / rect.height - 0.5;
+      targetRef.current = { x: nx, y: ny };
+    };
+    window.addEventListener('mousemove', onMove);
+
+    const onResize = () => {
+      camera.aspect = w() / h();
+      camera.updateProjectionMatrix();
+      renderer.setSize(w(), h());
+    };
+    window.addEventListener('resize', onResize);
+
+    let camX = 0, camY = 0;
+    const baseRadius = 9;
+
+    const tick = () => {
+      const t = (performance.now() - start) / 1000;
+
+      // Slow rotation + drift
+      group.rotation.y = t * 0.06;
+      group.rotation.x = Math.sin(t * 0.12) * 0.08;
+
+      // Gentle "breathing" on scales for fake bloom
+      const breath = 1 + Math.sin(t * 0.6) * 0.015;
+      group.scale.set(breath, breath, breath);
+
+      // Mouse parallax — ~5 deg per axis
+      const tx = targetRef.current.x;
+      const ty = targetRef.current.y;
+      camX += (tx * 0.087 - camX) * 0.04;     // ~5° in radians
+      camY += (-ty * 0.087 - camY) * 0.04;
+      camera.position.x = Math.sin(camX) * baseRadius * 0.15;
+      camera.position.y = Math.sin(camY) * baseRadius * 0.15;
+      camera.position.z = baseRadius;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('resize', onResize);
+      renderer.dispose();
+      baseGeom.dispose();
+      starsGeom.dispose();
+      if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement);
+    };
+  }, []);
+
+  return (
+    <section data-screen-label="01 Hero" className="relative w-full" style={{ minHeight: "100vh" }}>
+      <div ref={mountRef} className="hero-canvas" />
+      <div className="hero-glow" />
+      <div className="hero-vignette" />
+
+      {/* Top nav */}
+      <div className="absolute top-0 left-0 right-0 z-20 topnav-blur" style={{ borderBottom: "1px solid #34353C" }}>
+        <div className="max-w-[1280px] mx-auto px-6 md:px-10 h-14 flex items-center justify-between">
+          <div className="mono text-[11px] tracking-widest text-[var(--text)]">JD<span className="text-[var(--muted)]">/</span><span className="text-[var(--accent)]">XR</span></div>
+          <div className="hidden md:flex items-center gap-7 mono text-[11px] tracking-widest text-[var(--muted)]">
+            <a href="#work" className="hover:text-[var(--text)] transition-colors">WORK</a>
+            <a href="#about" className="hover:text-[var(--text)] transition-colors">ABOUT</a>
+            <a href="#experience" className="hover:text-[var(--text)] transition-colors">EXPERIENCE</a>
+            <a href="#contact" className="hover:text-[var(--text)] transition-colors">CONTACT</a>
+          </div>
+          <a href="#contact" className="mono text-[11px] tracking-widest text-[var(--accent)] hover:opacity-80 transition-opacity">
+            <span className="spec-dot" />AVAILABLE
+          </a>
+        </div>
+      </div>
+
+      {/* Overlay text */}
+      <div className="relative z-10 max-w-[1280px] mx-auto px-6 md:px-10 pt-40 md:pt-44 pb-32 md:pb-40">
+        <Reveal>
+          <div className="mono text-[11px] tracking-[0.22em] text-[var(--muted)] mb-8">
+            <span className="text-[var(--accent)]">●</span>&nbsp;&nbsp;XR + AI ENGINEER · PUNE, IN
+          </div>
+        </Reveal>
+        <Reveal delay={150}>
+          <h1 className="hero-h1 max-w-[16ch]">
+            I build <span style={{ color: "var(--accent)" }}>intelligent 3D systems</span> where XR meets AI.
+          </h1>
+        </Reveal>
+        <Reveal delay={300}>
+          <p className="mt-8 max-w-[58ch] text-[var(--muted)] text-[17px] md:text-[19px] leading-relaxed">
+            4+ years architecting real-time XR with computer vision and on-device AI — point cloud streaming, medical digital twins, multimodal LLM interfaces, 3D reconstruction pipelines.
+          </p>
+        </Reveal>
+        <Reveal delay={450}>
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            <a href="#work" className="btn-primary inline-flex items-center gap-2 px-5 py-3 rounded text-[13px] font-medium ease-spatial">
+              View work <I.ArrowRight size={15} />
+            </a>
+            <a href="#" className="btn-ghost inline-flex items-center gap-2 px-5 py-3 rounded text-[13px] font-medium ease-spatial">
+              <I.FileText size={15} /> Resume
+            </a>
+          </div>
+        </Reveal>
+
+        {/* spec corner readouts */}
+        <div className="mt-24 md:mt-28 grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-6 mono text-[11px] tracking-widest text-[var(--muted)] max-w-[860px]">
+          <div><div className="text-[var(--accent)]">04+</div><div className="mt-1">YEARS · XR</div></div>
+          <div><div className="text-[var(--accent)]">12+</div><div className="mt-1">SHIPPED SYSTEMS</div></div>
+          <div><div className="text-[var(--accent)]">3</div><div className="mt-1">DOMAINS</div></div>
+          <div><div className="text-[var(--accent)]">∞</div><div className="mt-1">REMOTE READY</div></div>
+        </div>
+      </div>
+
+      {/* scroll cue */}
+      <a href="#stack" className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 nudge mono text-[10px] tracking-[0.3em] text-[var(--muted)]">
+        SCROLL
+        <I.ChevronDown size={16} />
+      </a>
+    </section>
+  );
+}
+
+/* ============================================================
+   MARQUEE
+   ============================================================ */
+function Marquee() {
+  const items = [
+    "Unreal","Unity","C++","C#","Python","PyTorch","OpenXR","Apple Vision Pro","Meta Quest",
+    "LLMs","Computer Vision","Point Clouds","RGB-D","Speech AI","WebRTC","AWS","Cloudflare"
+  ];
+  const Row = () => (
+    <div className="flex items-center shrink-0">
+      {items.map((it, i) => (
+        <span key={i} className="mono text-[12px] tracking-widest text-[var(--muted)] px-7 whitespace-nowrap">
+          <span className="text-[var(--accent)] mr-3">+</span>{it.toUpperCase()}
+        </span>
+      ))}
+    </div>
+  );
+  return (
+    <section id="stack" data-screen-label="02 Stack" className="marquee relative border-y hairline overflow-hidden py-5" style={{ background: "var(--surface-alt)" }}>
+      <div className="flex marquee-track">
+        <Row /><Row />
+      </div>
+      {/* edge fades */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-32" style={{ background: "linear-gradient(to right, #15161A, transparent)"}} />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-32" style={{ background: "linear-gradient(to left, #15161A, transparent)"}} />
+    </section>
+  );
+}
+
+/* ============================================================
+   SECTION HEADER
+   ============================================================ */
+const SectionHead = ({ id, label, title, kicker }) => (
+  <div className="mb-14 md:mb-20">
+    <Reveal>
+      <div className="mono text-[11px] tracking-[0.24em] text-[var(--muted)] flex items-center">
+        <span className="spec-dot" />{label}
+      </div>
+    </Reveal>
+    <Reveal delay={120}>
+      <h2 className="mt-4 text-[36px] md:text-[56px] leading-[1.02] tracking-[-0.03em] font-semibold max-w-[18ch]">
+        {title}
+      </h2>
+    </Reveal>
+    {kicker && (
+      <Reveal delay={240}>
+        <p className="mt-5 max-w-[60ch] text-[var(--muted)] text-[16px] md:text-[17px] leading-relaxed">
+          {kicker}
+        </p>
+      </Reveal>
+    )}
+  </div>
+);
+
+/* ============================================================
+   ABOUT
+   ============================================================ */
+function About() {
+  return (
+    <section id="about" data-screen-label="03 About" className="relative" style={{ paddingTop: 120, paddingBottom: 120 }}>
+      <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16">
+          <div className="md:col-span-7">
+            <Reveal>
+              <div className="mono text-[11px] tracking-[0.24em] text-[var(--muted)] flex items-center mb-8">
+                <span className="spec-dot" />ABOUT / 01
+              </div>
+            </Reveal>
+            <Reveal delay={120}>
+              <p className="text-[20px] md:text-[24px] leading-[1.55] tracking-[-0.01em] text-[var(--text)]">
+                I'm Jayesh — I work at the intersection of XR and AI. Most XR engineers stop at rendering; most
+                ML engineers never touch a headset. I do both. I've shipped systems where on-device LLMs query
+                medical datasets on Apple Vision Pro, where RGB-D pipelines reconstruct 3D scenes from
+                synchronized camera streams, where multimodal speech AI drives hands-free clinical workflows,
+                and where live point clouds stream to XR devices across continents.
+                <span className="text-[var(--text)]"> Real-time graphics, computer vision, and applied AI</span>
+                — built to run in production.
+              </p>
+            </Reveal>
+          </div>
+          <div className="md:col-span-5">
+            <Reveal delay={200}>
+              <div className="card rounded-md p-6 md:p-7">
+                <div className="mono text-[10px] tracking-[0.28em] text-[var(--accent)] mb-5">// FACT SHEET</div>
+                <dl className="mono text-[12.5px] leading-[2.0]">
+                  {[
+                    ["Based",      "Pune, Maharashtra"],
+                    ["Role",       "XR + AI Engineer @ Ethosh Design"],
+                    ["Domains",    "Healthcare · Defense · Applied AI"],
+                    ["Stack",      "Unreal · Unity · Python · PyTorch · AWS"],
+                    ["Currently",  "Building distributed XR + on-device AI"],
+                    ["Open to",    "Senior XR / AI / R&D roles"],
+                  ].map(([k, v]) => (
+                    <div key={k} className="flex items-baseline gap-4 border-b hairline last:border-b-0 py-1">
+                      <dt className="w-[88px] text-[var(--muted)] uppercase tracking-wider text-[10.5px]">{k}</dt>
+                      <dd className="text-[var(--text)] flex-1">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   PROJECTS
+   ============================================================ */
+const projects = [
+  {
+    n: "01",
+    cat: "HEALTHCARE VR",
+    title: "Distributed Point Cloud Streaming",
+    desc: "Real-time 3D streaming across XR devices globally with multi-user sync. Cloudflare-backed low-latency delivery.",
+    tags: ["Unity", "Cloudflare", "Point Cloud", "Networking"],
+    art: "art-1",
+    span: "lg:col-span-2",
+  },
+  {
+    n: "02",
+    cat: "HEALTHCARE VR",
+    title: "Medical VR Digital Twin",
+    desc: "BLE biometric streaming into immersive Apple Vision Pro experiences with on-device LLM querying of medical datasets.",
+    tags: ["Vision Pro", "BLE", "On-device LLM", "Multimodal AI"],
+    art: "art-2",
+    span: "lg:col-span-1",
+  },
+  {
+    n: "03",
+    cat: "DEFENSE SIM",
+    title: "Firearm Training Simulator",
+    desc: "High-fidelity ballistic simulation for military training, validated against real-world ballistic behavior.",
+    tags: ["Unreal", "C++", "Ballistics", "Multiplayer"],
+    art: "art-3",
+    span: "lg:col-span-1",
+  },
+  {
+    n: "04",
+    cat: "AI / COMPUTER VISION",
+    title: "image-to-3d",
+    desc: "Predicts spatially consistent geometry from arbitrary visual inputs, with or without known camera poses.",
+    tags: ["Python", "PyTorch", "3D Reconstruction", "CV"],
+    link: "https://github.com/jayesh711/image-to-3d",
+    art: "art-4",
+    span: "lg:col-span-2",
+  },
+  {
+    n: "05",
+    cat: "OPEN SOURCE",
+    title: "3D Product Configurator",
+    desc: "Web-based configurator supporting uploaded 3D objects, hotspots, and animation playback.",
+    tags: ["TypeScript", "Three.js", "WebGL", "React"],
+    link: "https://github.com/jayesh711/3D-Product-Configurator-",
+    art: "art-5",
+    span: "lg:col-span-1",
+  },
+  {
+    n: "06",
+    cat: "OPEN SOURCE",
+    title: "Unity WebRTC Streaming",
+    desc: "Real-time video streaming into Unity scenes over WebRTC.",
+    tags: ["Unity", "C#", "WebRTC", "Networking"],
+    link: "https://github.com/jayesh711/Unity_WebRTC-",
+    art: "art-6",
+    span: "lg:col-span-2",
+  },
+];
+
+function ProjectCard({ p }) {
+  return (
+    <Reveal className={`group ${p.span}`}>
+      <div className="card relative rounded-md overflow-hidden h-full flex flex-col">
+        {/* Media area */}
+        <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+          <div className={`art ${p.art}`} />
+          <div className="absolute top-3 left-3 cat-tag z-10">
+            <span style={{ color: "var(--muted)" }}>{p.n}</span>&nbsp;&nbsp;/&nbsp;&nbsp;{p.cat}
+          </div>
+          {p.link && (
+            <a href={p.link} target="_blank" rel="noreferrer" className="absolute top-3 right-3 z-10 w-7 h-7 rounded border hairline flex items-center justify-center text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors ease-spatial" aria-label="Open repo">
+              <I.ExternalLink size={13} />
+            </a>
+          )}
+        </div>
+
+        {/* Body */}
+        <div className="p-6 md:p-7 flex flex-col gap-4 flex-1">
+          <h3 className="text-[22px] md:text-[26px] leading-[1.15] tracking-[-0.02em] font-semibold">
+            {p.title}
+          </h3>
+          <p className="text-[14.5px] leading-[1.6] text-[var(--muted)] max-w-[55ch]">{p.desc}</p>
+          <div className="flex flex-wrap gap-1.5 mt-auto">
+            {p.tags.map((t) => <span key={t} className="chip">{t}</span>)}
+          </div>
+          {p.link && (
+            <a href={p.link} target="_blank" rel="noreferrer" className="mono text-[11px] tracking-[0.2em] text-[var(--accent)] inline-flex items-center gap-2 link-acc w-fit">
+              VIEW REPO <I.ArrowRight size={12} />
+            </a>
+          )}
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+function Projects() {
+  return (
+    <section id="work" data-screen-label="04 Selected Work" className="relative border-t hairline" style={{ paddingTop: 120, paddingBottom: 120 }}>
+      <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+        <SectionHead label="WORK / 04" title="Selected Work" kicker="Six systems shipped across healthcare, defense, and open source — each balancing real-time graphics with messy real-world constraints (latency, hardware, regulation)." />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
+          {projects.map((p) => <ProjectCard key={p.n} p={p} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   EXPERIENCE
+   ============================================================ */
+const experience = [
+  {
+    when: "2025 — PRESENT",
+    role: "XR Developer",
+    org:  "Ethosh Design",
+    bullets: [
+      "Distributed 3D streaming infrastructure",
+      "Medical digital twin VR",
+      "On-device LLM integration on Apple Vision Pro for secure structured medical data querying",
+      "Multimodal AI interfaces (Speech-to-Text, Text-to-Speech) for hands-free clinical workflows",
+      "RGB-D synchronization pipelines",
+      "AWS S3 telemetry",
+    ],
+  },
+  {
+    when: "2022 — 2024",
+    role: "Associate XR Developer",
+    org:  "Ethosh Design",
+    bullets: [
+      "Defense firearm simulator validated with military feedback",
+      "Multiplayer surgical training (Unreal)",
+      "Cross-platform medical XR (iOS / Android / Windows)",
+      "Compliance training XR",
+    ],
+  },
+  {
+    when: "2022",
+    role: "Intern XR Developer",
+    org:  "Ethosh Design",
+    bullets: [
+      "Unreal Pixel Streaming for remote 3D access",
+      "MetaHuman interactive agents",
+      "Performance profiling across devices",
+    ],
+  },
+];
+
+function Experience() {
+  return (
+    <section id="experience" data-screen-label="05 Experience" className="relative border-t hairline" style={{ paddingTop: 120, paddingBottom: 120, background: "var(--surface-alt)" }}>
+      <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+        <SectionHead label="EXPERIENCE / 05" title="A timeline." />
+        <div className="relative">
+          {/* spine */}
+          <div className="absolute left-[7px] top-2 bottom-2 w-px" style={{ background: "linear-gradient(to bottom, transparent, #34353C 8%, #34353C 92%, transparent)" }} />
+          <div className="flex flex-col gap-14">
+            {experience.map((e, i) => (
+              <Reveal key={i} delay={i * 80}>
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 pl-8">
+                  <div className="absolute -ml-8 mt-2 tl-node" />
+                  <div className="md:col-span-3">
+                    <div className="mono text-[11px] tracking-[0.22em] text-[var(--accent)]">{e.when}</div>
+                  </div>
+                  <div className="md:col-span-9">
+                    <div className="text-[22px] md:text-[26px] tracking-[-0.02em] font-semibold">{e.role}</div>
+                    <div className="mono text-[12px] tracking-widest text-[var(--muted)] mt-1">{e.org.toUpperCase()}</div>
+                    <ul className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-2.5">
+                      {e.bullets.map((b) => (
+                        <li key={b} className="text-[14.5px] text-[var(--muted)] leading-[1.55] flex items-start gap-3">
+                          <span className="mt-2 inline-block w-1 h-1 bg-[var(--accent)] rounded-full shrink-0" />
+                          <span>{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   CAPABILITIES
+   ============================================================ */
+const caps = [
+  { Icon: I.Network,   title: "Distributed XR streaming infrastructure",      desc: "Multi-user, low-latency 3D delivery across continents and devices." },
+  { Icon: I.Box,       title: "On-device LLM integration",                    desc: "Secure, private LLMs running on Vision Pro and mobile XR devices." },
+  { Icon: I.Activity,  title: "Computer vision & 3D reconstruction",          desc: "RGB-D capture, point clouds, and geometry inference from images." },
+  { Icon: I.Mic,       title: "Multimodal AI interfaces",                     desc: "STT, TTS, and speech-driven XR woven into spatial interfaces." },
+  { Icon: I.Users,     title: "Real-time biometric & IoT integration in XR",  desc: "BLE, sensor fusion, and live telemetry piped into immersive scenes." },
+  { Icon: I.Crosshair, title: "Defense & medical simulation systems",         desc: "High-fidelity training environments validated against real data." },
+];
+
+function Capabilities() {
+  return (
+    <section data-screen-label="06 Capabilities" className="relative border-t hairline" style={{ paddingTop: 120, paddingBottom: 120 }}>
+      <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+        <SectionHead label="CAPABILITIES / 06" title="What I can build." />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+          {caps.map((c, i) => (
+            <Reveal key={i} delay={i * 60}>
+              <div className="card rounded-md p-7 h-full">
+                <div className="w-10 h-10 rounded border hairline flex items-center justify-center text-[var(--accent)] mb-6">
+                  <c.Icon size={18} />
+                </div>
+                <div className="text-[17px] md:text-[18px] font-medium tracking-[-0.01em] leading-snug">{c.title}</div>
+                <p className="mt-3 text-[14px] text-[var(--muted)] leading-[1.55]">{c.desc}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   CONTACT
+   ============================================================ */
+function Contact() {
+  const [copied, setCopied] = useState(false);
+  const email = "dongrejayesh89@gmail.com";
+  const copy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = email; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); setCopied(true); setTimeout(()=>setCopied(false), 1800); } catch(_){}
+      document.body.removeChild(ta);
+    }
+  }, []);
+
+  return (
+    <section id="contact" data-screen-label="07 Contact" className="relative border-t hairline" style={{ paddingTop: 140, paddingBottom: 140 }}>
+      <div className="max-w-[1280px] mx-auto px-6 md:px-10">
+        <Reveal>
+          <div className="mono text-[11px] tracking-[0.24em] text-[var(--muted)] mb-8 flex items-center">
+            <span className="spec-dot" />CONTACT / 07
+          </div>
+        </Reveal>
+        <Reveal delay={120}>
+          <h2 className="text-[44px] md:text-[80px] leading-[0.98] tracking-[-0.035em] font-semibold max-w-[18ch]">
+            Have an XR or AI problem worth solving?
+          </h2>
+        </Reveal>
+
+        <Reveal delay={240}>
+          <div className="mt-14 md:mt-20 grid grid-cols-1 md:grid-cols-12 gap-12">
+            <div className="md:col-span-7">
+              <div className="mono text-[10px] tracking-[0.28em] text-[var(--muted)] mb-3">// EMAIL</div>
+              <button onClick={copy} className="group inline-flex items-center gap-3 text-[22px] md:text-[34px] tracking-[-0.02em] font-medium text-[var(--text)]">
+                <span style={{ color: "var(--accent)" }}>{email}</span>
+                <span className="w-9 h-9 md:w-10 md:h-10 rounded border hairline flex items-center justify-center text-[var(--muted)] group-hover:text-[var(--accent)] group-hover:border-[var(--accent)] transition-colors ease-spatial">
+                  {copied ? <I.Check size={15} /> : <I.Copy size={14} />}
+                </span>
+              </button>
+              <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-[640px]">
+                {[
+                  { Icon: I.Linkedin, label: "LINKEDIN", href: "https://linkedin.com/in/jayesh-dongre-55ba361ab", display: "linkedin.com/in/jayesh-dongre" },
+                  { Icon: I.Github,   label: "GITHUB",   href: "https://github.com/jayesh711", display: "github.com/jayesh711" },
+                  { Icon: I.FileText, label: "RESUME",   href: "#", display: "resume.pdf" },
+                ].map((l) => (
+                  <a key={l.label} href={l.href} target={l.href === "#" ? undefined : "_blank"} rel="noreferrer"
+                     className="group card rounded-md p-5 ease-spatial block">
+                    <div className="flex items-center justify-between">
+                      <div className="mono text-[10px] tracking-[0.28em] text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors">{l.label}</div>
+                      <l.Icon size={14} className="text-[var(--muted)] group-hover:text-[var(--accent)] transition-colors" />
+                    </div>
+                    <div className="mono text-[12px] mt-4 text-[var(--text)] truncate">{l.display}</div>
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div className="md:col-span-5">
+              <div className="card rounded-md p-7">
+                <div className="mono text-[10px] tracking-[0.28em] text-[var(--accent)] mb-5">// AVAILABILITY</div>
+                <div className="text-[16px] leading-[1.7] text-[var(--text)]">
+                  Based in <span className="text-[var(--accent)]">Pune</span> · Available globally (remote-friendly).
+                </div>
+                <div className="mt-5 mono text-[11.5px] leading-[1.9] text-[var(--muted)]">
+                  <div className="flex items-center gap-2"><span className="spec-dot" />OPEN TO SENIOR XR / R&D ROLES</div>
+                  <div className="flex items-center gap-2"><span className="spec-dot" />CONTRACT &amp; FULL-TIME</div>
+                  <div className="flex items-center gap-2"><span className="spec-dot" />UTC+5:30 · IST</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+
+      <div className={`toast ${copied ? "show" : ""}`}>
+        <span className="text-[var(--accent)]">✓</span>&nbsp;&nbsp;COPIED · {email}
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+function Footer() {
+  const top = (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  return (
+    <footer className="relative border-t hairline" style={{ background: "var(--surface-alt)" }}>
+      <div className="max-w-[1280px] mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
+        <div className="mono text-[11px] tracking-[0.22em] text-[var(--muted)]">
+          © 2026 JAYESH DONGARE&nbsp;&nbsp;·&nbsp;&nbsp;XR + AI ENGINEER&nbsp;&nbsp;·&nbsp;&nbsp;BUILT WITH THREE.JS
+        </div>
+        <a href="#" onClick={top} className="group inline-flex items-center gap-3 mono text-[11px] tracking-[0.22em] text-[var(--muted)] hover:text-[var(--accent)] transition-colors">
+          BACK TO TOP
+          <span className="w-8 h-8 rounded border hairline flex items-center justify-center group-hover:border-[var(--accent)] group-hover:text-[var(--accent)] transition-colors">
+            <I.ArrowUp size={13} />
+          </span>
+        </a>
+      </div>
+    </footer>
+  );
+}
+
+/* ============================================================
+   SCROLL PROGRESS
+   ============================================================ */
+function ScrollProgress() {
+  const ref = useRef(null);
+  useEffect(() => {
+    const onScroll = () => {
+      const el = ref.current;
+      if (!el) return;
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      const pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+      el.style.width = pct + "%";
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+  return <div ref={ref} className="scroll-progress" />;
+}
+
+/* ============================================================
+   APP
+   ============================================================ */
+function App() {
+  return (
+    <div className="min-h-screen text-[var(--text)] bg-[var(--bg)]">
+      <ScrollProgress />
+      <Hero />
+      <Marquee />
+      <About />
+      <Projects />
+      <Experience />
+      <Capabilities />
+      <Contact />
+      <Footer />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
